@@ -18,7 +18,7 @@ Reset:
     ldx #$80	; blue background color
     stx COLUBK
     
-    lda #$FF	; white playfield color
+    lda #$ff	; white playfield color
     sta COLUPF
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,7 +71,67 @@ VisibleScanlines:
     REPEAT 10
         sta WSYNC
     REPEND
-	
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Displays 10 scanlines for the scoreboard number.
+;; Pulls data from an array of bytes defined at NumberBitmap
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ldy #0
+ScoreboardLoop:
+    lda NumberBitmap,Y
+    sta PF1
+    sta WSYNC
+    iny
+    cpy #10
+    bne ScoreboardLoop
+
+    lda #0
+    sta PF1
+
+    REPEAT 50
+        sta WSYNC
+    REPEND
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Displays 10 scanlines for the Player 0 graphics.
+;; Pulls data from an array of bytes defined at PlayerBitmap
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ldy #0
+Player0Loop
+    lda PlayerBitmap,Y
+    sta GRP0
+    sta WSYNC
+    iny
+    cpy #10
+    bne Player0Loop
+
+    lda #0
+    sta GRP0
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Displays 10 scanlines for the Player 0 graphics.
+;; Pulls data from an array of bytes defined at PlayerBitmap
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ldy #0
+Player1Loop
+    lda PlayerBitmap,Y
+    sta GRP1
+    sta WSYNC
+    iny
+    cpy #10
+    bne Player1Loop
+
+    lda #0
+    sta GRP1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Draw the remaining 102 scanlines (192-90), since we already
+;; used 10+10+50+10+10=80 scanlines in the current frame.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    REPEAT 102
+        sta WSYNC
+    REPEND
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Output 30 more VBLANK overscan lines to complete our frame
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,6 +147,40 @@ VisibleScanlines:
 ;; Loop to next frame
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	jmp StartFrame
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Defines an array of bytes to draw the scoreboard number.
+;; We add these bytes in the last ROM addresses.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    org $FFE8
+PlayerBitmap:
+    .byte #%01111110
+    .byte #%11111111
+    .byte #%10011001
+    .byte #%11111111
+    .byte #%11111111
+    .byte #%11111111
+    .byte #%10111101
+    .byte #%11000011
+    .byte #%11111111
+    .byte #%01111110
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Defines an array of bytes to draw the scoreboard number.
+;; We add these bytes in the final ROM addresses.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    org $FFF2
+NumberBitmap:
+    .byte #%00001110
+    .byte #%00001110
+    .byte #%00000010
+    .byte #%00000010
+    .byte #%00001110
+    .byte #%00001110
+    .byte #%00001000
+    .byte #%00001000
+    .byte #%00001110
+    .byte #%00001110
         
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Complete ROM size
